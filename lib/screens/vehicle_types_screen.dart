@@ -3,22 +3,23 @@ import 'package:flutter/material.dart';
 
 import 'package:vehicles_app/components/loader_component.dart';
 import 'package:vehicles_app/helpers/api_helper.dart';
-import 'package:vehicles_app/models/brand.dart';
 import 'package:vehicles_app/models/response.dart';
 import 'package:vehicles_app/models/token.dart';
-import 'package:vehicles_app/screens/brand_screen.dart';
+import 'package:vehicles_app/models/vehicle_type.dart';
 
-class BrandsScreen extends StatefulWidget {
+import 'vehicle_type_screen.dart';
+
+class VehicleTypesScreen extends StatefulWidget {
   final Token token;
 
-  BrandsScreen({required this.token});
+  VehicleTypesScreen({required this.token});
 
   @override
-  _BrandsScreenState createState() => _BrandsScreenState();
+  _VehicleTypesScreenState createState() => _VehicleTypesScreenState();
 }
 
-class _BrandsScreenState extends State<BrandsScreen> {
-  List<Brand> _brands = [];
+class _VehicleTypesScreenState extends State<VehicleTypesScreen> {
+  List<VehicleType> _vehicleTypes = [];
   bool _showLoader = false;
 
   bool _isFiltered = false;
@@ -29,14 +30,14 @@ class _BrandsScreenState extends State<BrandsScreen> {
     // TODO: implement initState
     // se llama cuando la pantalla cambia (cada que la página cargue)
     super.initState();
-    _getBrands();
+    _getVehicleTypes();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Marcas'),
+        title: Text('Tipos de Vehículo'),
         actions: <Widget>[
           _isFiltered
               ? IconButton(
@@ -65,12 +66,12 @@ class _BrandsScreenState extends State<BrandsScreen> {
     );
   }
 
-  Future<Null> _getBrands() async {
+  Future<Null> _getVehicleTypes() async {
     setState(() {
       _showLoader = true;
     });
 
-    Response response = await ApiHelper.getBrands(widget.token.token);
+    Response response = await ApiHelper.getVehicleTypes(widget.token.token);
 
     // var url = Uri.parse('${Constants.apiUrl}/api/Procedures');
     // var response = await http.get(
@@ -106,12 +107,12 @@ class _BrandsScreenState extends State<BrandsScreen> {
     }
 
     setState(() {
-      _brands = response.result;
+      _vehicleTypes = response.result;
     });
   }
 
   Widget _getContent() {
-    return _brands.length == 0 ? _noContent() : _getListView();
+    return _vehicleTypes.length == 0 ? _noContent() : _getListView();
   }
 
   Widget _noContent() {
@@ -120,8 +121,8 @@ class _BrandsScreenState extends State<BrandsScreen> {
         margin: EdgeInsets.all(20),
         child: Text(
             _isFiltered
-                ? 'No hay marcas con ese criterio de búsqueda.'
-                : 'No hay marcas registradas.',
+                ? 'No hay tipos de vehículo con ese criterio de búsqueda.'
+                : 'No hay tipos de vehículo registradas.',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -132,9 +133,9 @@ class _BrandsScreenState extends State<BrandsScreen> {
 
   Widget _getListView() {
     return RefreshIndicator(
-      onRefresh: _getBrands,
+      onRefresh: _getVehicleTypes,
       child: ListView(
-        children: _brands.map((e) {
+        children: _vehicleTypes.map((e) {
           return Card(
             child: InkWell(
               onTap: () => _goEdit(e),
@@ -171,9 +172,9 @@ class _BrandsScreenState extends State<BrandsScreen> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
             ),
-            title: Text('Filtrar Marcas'),
+            title: Text('Filtrar Tipos de Vehículo'),
             content: Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
-              Text('Escriba las primeras letras de la marca'),
+              Text('Escriba las primeras letras del tipo de vehículo'),
               SizedBox(
                 height: 10,
               ),
@@ -203,7 +204,7 @@ class _BrandsScreenState extends State<BrandsScreen> {
       _isFiltered = false;
     });
 
-    _getBrands();
+    _getVehicleTypes();
   }
 
   void _filter() {
@@ -211,15 +212,17 @@ class _BrandsScreenState extends State<BrandsScreen> {
       return;
     }
 
-    List<Brand> filteredList = [];
-    for (var brand in _brands) {
-      if (brand.description.toLowerCase().contains(_search.toLowerCase())) {
-        filteredList.add(brand);
+    List<VehicleType> filteredList = [];
+    for (var vehicleType in _vehicleTypes) {
+      if (vehicleType.description
+          .toLowerCase()
+          .contains(_search.toLowerCase())) {
+        filteredList.add(vehicleType);
       }
     }
 
     setState(() {
-      _brands = filteredList;
+      _vehicleTypes = filteredList;
       _isFiltered = true;
     });
 
@@ -230,23 +233,24 @@ class _BrandsScreenState extends State<BrandsScreen> {
     String? result = await Navigator.push(
         context,
         MaterialPageRoute(
-            builder: (context) => BrandScreen(
-                token: widget.token, brand: Brand(id: 0, description: ''))));
+            builder: (context) => VehicleTypeScreen(
+                token: widget.token,
+                vehicleType: VehicleType(id: 0, description: ''))));
 
     if (result == 'yes') {
-      _getBrands();
+      _getVehicleTypes();
     }
   }
 
-  void _goEdit(Brand brand) async {
+  void _goEdit(VehicleType vehicleType) async {
     String? result = await Navigator.push(
         context,
         MaterialPageRoute(
-            builder: (context) =>
-                BrandScreen(token: widget.token, brand: brand)));
+            builder: (context) => VehicleTypeScreen(
+                token: widget.token, vehicleType: vehicleType)));
 
     if (result == 'yes') {
-      _getBrands();
+      _getVehicleTypes();
     }
   }
 }
