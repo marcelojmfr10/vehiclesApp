@@ -3,12 +3,10 @@ import 'package:flutter/material.dart';
 
 import 'package:vehicles_app/components/loader_component.dart';
 import 'package:vehicles_app/helpers/api_helper.dart';
-import 'package:vehicles_app/models/brand.dart';
 import 'package:vehicles_app/models/document_type.dart';
 import 'package:vehicles_app/models/response.dart';
 import 'package:vehicles_app/models/token.dart';
 import 'package:vehicles_app/models/user.dart';
-import 'package:vehicles_app/screens/brand_screen.dart';
 import 'package:vehicles_app/screens/user_screen.dart';
 
 class UsersScreen extends StatefulWidget {
@@ -144,18 +142,48 @@ class _UsersScreenState extends State<UsersScreen> {
               child: Container(
                 margin: EdgeInsets.all(10),
                 padding: EdgeInsets.all(5),
-                child: Column(
+                child: Row(
+                  // mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(e.fullName,
-                            style: TextStyle(
-                              fontSize: 20,
-                            )),
-                        Icon(Icons.arrow_forward_ios),
-                      ],
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(40),
+                      child: FadeInImage(
+                        placeholder: AssetImage('assets/vehicles_logo.jpg'),
+                        image: NetworkImage(e.imageFullPath),
+                        width: 80,
+                        height: 80,
+                        fit: BoxFit.cover,
+                      ),
                     ),
+                    Expanded(
+                      child: Container(
+                        margin: EdgeInsets.symmetric(horizontal: 10),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Column(
+                              children: [
+                                Text(e.fullName,
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                    )),
+                                SizedBox(height: 5),
+                                Text(e.email,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                    )),
+                                Text(e.phoneNumber,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                    )),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Icon(Icons.arrow_forward_ios),
                   ],
                 ),
               ),
