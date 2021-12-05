@@ -1,4 +1,5 @@
 import 'package:adaptive_dialog/adaptive_dialog.dart';
+import 'package:camera/camera.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 
@@ -8,6 +9,7 @@ import 'package:vehicles_app/models/document_type.dart';
 import 'package:vehicles_app/models/response.dart';
 import 'package:vehicles_app/models/token.dart';
 import 'package:vehicles_app/models/user.dart';
+import 'package:vehicles_app/screens/take_picture_screen.dart';
 
 class UserScreen extends StatefulWidget {
   final Token token;
@@ -32,7 +34,9 @@ class _UserScreenState extends State<UserScreen> {
   bool _lastNameShowError = false;
   TextEditingController _lastNameController = TextEditingController();
 
-  DocumentType _documentType = DocumentType(id: 0, description: '');
+  int _documentTypeId = 0;
+  String _documentTypeIdError = '';
+  bool _documentTypeIdShowError = false;
   List<DocumentType> _documentTypes = [];
 
   String _document = '';
@@ -67,7 +71,7 @@ class _UserScreenState extends State<UserScreen> {
 
     _getDocumentTypes();
 
-    _documentType = widget.user.documentType;
+    _documentTypeId = widget.user.documentType.id;
 
     _document = widget.user.document;
     _documentController.text = _document;
@@ -195,6 +199,14 @@ class _UserScreenState extends State<UserScreen> {
       _lastNameShowError = false;
     }
 
+    if (_documentTypeId == 0) {
+      isValid = false;
+      _documentTypeIdShowError = true;
+      _documentTypeIdError = 'Debes seleccionar el tipo de documento.';
+    } else {
+      _documentTypeIdShowError = false;
+    }
+
     if (_document.isEmpty) {
       isValid = false;
       _documentShowError = true;
@@ -243,7 +255,7 @@ class _UserScreenState extends State<UserScreen> {
     Map<String, dynamic> request = {
       'firstName': _firstName,
       'lastName': _lastName,
-      'documentType': 1,
+      'documentType': _documentTypeId,
       'document': _document,
       'email': _email,
       'userName': _email,
@@ -281,7 +293,7 @@ class _UserScreenState extends State<UserScreen> {
       'id': widget.user.id,
       'firstName': _firstName,
       'lastName': _lastName,
-      'documentType': 1,
+      'documentType': _documentTypeId,
       'document': _document,
       'email': _email,
       'userName': _email,
@@ -352,24 +364,27 @@ class _UserScreenState extends State<UserScreen> {
   }
 
   Widget _showPhoto() {
-    return Container(
-      margin: EdgeInsets.only(top: 10),
-      child: widget.user.id.isEmpty
-          ? Image(
-              image: AssetImage('assets/noimage.png'),
-              height: 160,
-              width: 160,
-            )
-          : ClipRRect(
-              borderRadius: BorderRadius.circular(80),
-              child: FadeInImage(
-                placeholder: AssetImage('assets/vehicles_logo.jpg'),
-                image: NetworkImage(widget.user.imageFullPath),
-                width: 160,
+    return InkWell(
+      onTap: () => _takePicture(),
+      child: Container(
+        margin: EdgeInsets.only(top: 10),
+        child: widget.user.id.isEmpty
+            ? Image(
+                image: AssetImage('assets/noimage.png'),
                 height: 160,
-                fit: BoxFit.cover,
+                width: 160,
+              )
+            : ClipRRect(
+                borderRadius: BorderRadius.circular(80),
+                child: FadeInImage(
+                  placeholder: AssetImage('assets/vehicles_logo.jpg'),
+                  image: NetworkImage(widget.user.imageFullPath),
+                  width: 160,
+                  height: 160,
+                  fit: BoxFit.cover,
+                ),
               ),
-            ),
+      ),
     );
   }
 
@@ -394,7 +409,25 @@ class _UserScreenState extends State<UserScreen> {
 
   Widget _showDocumentType() {
     // TODO: Pending to implement
-    return Container();
+    return Container(
+        padding: EdgeInsets.all(10),
+        child: _documentTypes.length == 0
+            ? Text('Cargando tipos de documentos...')
+            : DropdownButtonFormField(
+                items: _getComboDocumentTypes(),
+                value: _documentTypeId,
+                onChanged: (option) {
+                  setState(() {
+                    _documentTypeId = option as int;
+                  });
+                },
+                decoration: InputDecoration(
+                    hintText: 'Seleccione un tipo de documento...',
+                    labelText: 'Tipo documento',
+                    errorText:
+                        _documentTypeIdShowError ? _documentTypeIdError : null,
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10)))));
   }
 
   Widget _showDocument() {
@@ -501,5 +534,28 @@ class _UserScreenState extends State<UserScreen> {
     setState(() {
       _documentTypes = response.result;
     });
+  }
+
+  List<DropdownMenuItem<int>> _getComboDocumentTypes() {
+    List<DropdownMenuItem<int>> list = [];
+    list.add(DropdownMenuItem(
+      child: Text('Seleccione un tipo de documento...'),
+      value: 0,
+    ));
+    _documentTypes.forEach((documentType) {
+      list.add(DropdownMenuItem(
+          child: Text(documentType.description), value: documentType.id));
+    });
+    return list;
+  }
+
+  void _takePicture() async {
+    WidgetsFlutterBinding.ensureInitialized();
+    final cameras = await availableCameras();
+    final firstCamera = cameras.first;
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => TakePictureScreen(camera: firstCamera)));
   }
 }
