@@ -23,10 +23,8 @@ class _DisplayPictureScreenState extends State<DisplayPictureScreen> {
       ),
       body: Column(
         children: [
-          Image.file(
-            File(widget.image.path),
-            width: MediaQuery.of(context).size.width,
-          ),
+          Image.file(File(widget.image.path),
+              width: MediaQuery.of(context).size.width, fit: BoxFit.cover),
           Container(
               margin: EdgeInsets.all(10),
               child: Row(

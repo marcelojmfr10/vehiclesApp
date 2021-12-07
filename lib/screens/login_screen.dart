@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:adaptive_dialog/adaptive_dialog.dart';
+import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:http/http.dart' as http;
@@ -133,30 +135,38 @@ class _LoginScreenState extends State<LoginScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: <Widget>[
-          Expanded(
-              child: ElevatedButton(
-                  onPressed: () => _login(),
-                  style: ButtonStyle(backgroundColor:
-                      MaterialStateProperty.resolveWith<Color>(
-                          (Set<MaterialState> states) {
-                    return Color(0xFF120E43);
-                  })),
-                  child: Text('Iniciar Sesión'))),
+          _showLoginButton(),
           SizedBox(
             width: 20,
           ),
-          Expanded(
-            child: ElevatedButton(
-                onPressed: () {},
-                style: ButtonStyle(backgroundColor:
-                    MaterialStateProperty.resolveWith<Color>(
-                        (Set<MaterialState> states) {
-                  return Color(0xFFE03B8B);
-                })),
-                child: Text('Nuevo Usuario')),
-          ),
+          _showRegisterButton()
         ],
       ),
+    );
+  }
+
+  Widget _showLoginButton() {
+    return Expanded(
+        child: ElevatedButton(
+            onPressed: () => _login(),
+            style: ButtonStyle(backgroundColor:
+                MaterialStateProperty.resolveWith<Color>(
+                    (Set<MaterialState> states) {
+              return Color(0xFF120E43);
+            })),
+            child: Text('Iniciar Sesión')));
+  }
+
+  Widget _showRegisterButton() {
+    return Expanded(
+      child: ElevatedButton(
+          onPressed: () {},
+          style: ButtonStyle(backgroundColor:
+              MaterialStateProperty.resolveWith<Color>(
+                  (Set<MaterialState> states) {
+            return Color(0xFFE03B8B);
+          })),
+          child: Text('Nuevo Usuario')),
     );
   }
 
@@ -171,6 +181,24 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() {
       _showLoader = true;
     });
+
+    // validar la conexión a internet
+    var connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult == ConnectivityResult.none) {
+      setState(() {
+        _showLoader = false;
+      });
+
+      await showAlertDialog(
+          context: context,
+          title: 'Error',
+          message: 'Verifica que estés conectado a internet.',
+          actions: <AlertDialogAction>[
+            AlertDialogAction(key: null, label: 'Aceptar')
+          ]);
+
+      return;
+    }
 
     Map<String, dynamic> request = {'userName': _email, 'password': _password};
 
