@@ -90,7 +90,7 @@ class _VehicleTypesScreenState extends State<VehicleTypesScreen> {
       return;
     }
 
-    Response response = await ApiHelper.getVehicleTypes(widget.token.token);
+    Response response = await ApiHelper.getVehicleTypes(widget.token);
 
     // var url = Uri.parse('${Constants.apiUrl}/api/Procedures');
     // var response = await http.get(

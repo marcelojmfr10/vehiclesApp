@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vehicles_app/models/token.dart';
 import 'package:vehicles_app/screens/brands_screen.dart';
 import 'package:vehicles_app/screens/document_types_screen.dart';
@@ -40,6 +41,7 @@ class _HomeScreenState extends State<HomeScreen> {
               placeholder: AssetImage('assets/vehicles_logo.jpg'),
               image: NetworkImage(widget.token.user.imageFullPath),
               height: 300,
+              width: 300,
               fit: BoxFit.cover),
         ),
         SizedBox(
@@ -129,10 +131,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ListTile(
             leading: Icon(Icons.logout),
             title: Text('Cerrar Sesión'),
-            onTap: () {
-              Navigator.pushReplacement(context,
-                  MaterialPageRoute(builder: (context) => LoginScreen()));
-            },
+            onTap: () => _logOut(),
           ),
         ],
       ),
@@ -163,15 +162,20 @@ class _HomeScreenState extends State<HomeScreen> {
             onTap: () {},
           ),
           ListTile(
-            leading: Icon(Icons.logout),
-            title: Text('Cerrar Sesión'),
-            onTap: () {
-              Navigator.pushReplacement(context,
-                  MaterialPageRoute(builder: (context) => LoginScreen()));
-            },
-          ),
+              leading: Icon(Icons.logout),
+              title: Text('Cerrar Sesión'),
+              onTap: () => _logOut()),
         ],
       ),
     );
+  }
+
+  void _logOut() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isRemembered', false);
+    await prefs.setString('userBody', '');
+
+    Navigator.pushReplacement(
+        context, MaterialPageRoute(builder: (context) => LoginScreen()));
   }
 }

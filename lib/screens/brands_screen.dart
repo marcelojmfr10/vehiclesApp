@@ -89,7 +89,7 @@ class _BrandsScreenState extends State<BrandsScreen> {
       return;
     }
 
-    Response response = await ApiHelper.getBrands(widget.token.token);
+    Response response = await ApiHelper.getBrands(widget.token);
 
     // var url = Uri.parse('${Constants.apiUrl}/api/Procedures');
     // var response = await http.get(

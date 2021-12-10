@@ -91,7 +91,7 @@ class _UsersScreenState extends State<UsersScreen> {
       return;
     }
 
-    Response response = await ApiHelper.getUsers(widget.token.token);
+    Response response = await ApiHelper.getUsers(widget.token);
 
     // var url = Uri.parse('${Constants.apiUrl}/api/Procedures');
     // var response = await http.get(

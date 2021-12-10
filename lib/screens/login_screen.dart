@@ -5,6 +5,7 @@ import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:vehicles_app/components/loader_component.dart';
 import 'package:vehicles_app/helpers/constants.dart';
@@ -19,11 +20,11 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  String _email = 'luis@yopmail.com';
+  String _email = '';
   String _emailError = '';
   bool _emailShowError = false;
 
-  String _password = '123456';
+  String _password = '';
   String _passwordError = '';
   bool _passwordShowError = false;
 
@@ -66,6 +67,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return Image(
       image: AssetImage('assets/vehicles_logo.jpg'),
       width: 300,
+      fit: BoxFit.fill,
     );
   }
 
@@ -224,6 +226,11 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     var body = response.body;
+
+    if (_rememberme) {
+      _storeUser(body);
+    }
+
     var decodedJson = jsonDecode(body);
     var token = Token.fromJson(decodedJson);
     Navigator.pushReplacement(context,
@@ -259,5 +266,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
     setState(() {});
     return isValid;
+  }
+
+  void _storeUser(String body) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isRemembered', true);
+    await prefs.setString('userBody', body);
   }
 }

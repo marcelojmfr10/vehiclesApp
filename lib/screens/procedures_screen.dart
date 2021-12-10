@@ -90,7 +90,7 @@ class _ProceduresScreenState extends State<ProceduresScreen> {
       return;
     }
 
-    Response response = await ApiHelper.getProcedures(widget.token.token);
+    Response response = await ApiHelper.getProcedures(widget.token);
 
     // var url = Uri.parse('${Constants.apiUrl}/api/Procedures');
     // var response = await http.get(

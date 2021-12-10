@@ -90,7 +90,7 @@ class _DocumentTypesScreenState extends State<DocumentTypesScreen> {
       return;
     }
 
-    Response response = await ApiHelper.getDocumentTypes(widget.token.token);
+    Response response = await ApiHelper.getDocumentTypes(widget.token);
 
     // var url = Uri.parse('${Constants.apiUrl}/api/Procedures');
     // var response = await http.get(

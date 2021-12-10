@@ -296,7 +296,7 @@ class _UserScreenState extends State<UserScreen> {
     };
 
     Response response =
-        await ApiHelper.post('/api/Users/', request, widget.token.token);
+        await ApiHelper.post('/api/Users/', request, widget.token);
 
     setState(() {
       _showLoader = false;
@@ -359,7 +359,7 @@ class _UserScreenState extends State<UserScreen> {
     };
 
     Response response = await ApiHelper.put(
-        '/api/Users/', widget.user.id, request, widget.token.token);
+        '/api/Users/', widget.user.id, request, widget.token);
 
     setState(() {
       _showLoader = false;
@@ -417,8 +417,8 @@ class _UserScreenState extends State<UserScreen> {
       return;
     }
 
-    Response response = await ApiHelper.delete(
-        '/api/Users/', widget.user.id, widget.token.token);
+    Response response =
+        await ApiHelper.delete('/api/Users/', widget.user.id, widget.token);
 
     setState(() {
       _showLoader = false;
@@ -637,7 +637,7 @@ class _UserScreenState extends State<UserScreen> {
       return;
     }
 
-    Response response = await ApiHelper.getDocumentTypes(widget.token.token);
+    Response response = await ApiHelper.getDocumentTypes(widget.token);
 
     setState(() {
       _showLoader = false;
