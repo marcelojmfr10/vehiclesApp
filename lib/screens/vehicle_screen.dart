@@ -606,7 +606,7 @@ class _VehicleScreenState extends State<VehicleScreen> {
     Navigator.pop(context, 'yes');
   }
 
-  void _takePicture() async {
+  Future<Null> _takePicture() async {
     WidgetsFlutterBinding.ensureInitialized();
     final cameras = await availableCameras();
     final firstCamera = cameras.first;
@@ -623,7 +623,7 @@ class _VehicleScreenState extends State<VehicleScreen> {
     }
   }
 
-  void _selectPicture() async {
+  Future<Null> _selectPicture() async {
     final ImagePicker _picker = ImagePicker();
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
@@ -847,7 +847,7 @@ class _VehicleScreenState extends State<VehicleScreen> {
           children: <Widget>[
             Expanded(
                 child: ElevatedButton(
-              onPressed: () {},
+              onPressed: () => _goAddPhoto(),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
@@ -865,7 +865,7 @@ class _VehicleScreenState extends State<VehicleScreen> {
             SizedBox(width: 20),
             Expanded(
                 child: ElevatedButton(
-              onPressed: () {},
+              onPressed: () => _confirmDeletePhoto(),
               child: Row(
                 children: [
                   Icon(Icons.delete),
@@ -881,5 +881,145 @@ class _VehicleScreenState extends State<VehicleScreen> {
             ))
           ],
         ));
+  }
+
+  void _goAddPhoto() async {
+    var response = await showAlertDialog(
+        context: context,
+        title: 'Confirmación',
+        message: '¿De dónde deseas obtener la imagen?',
+        actions: <AlertDialogAction>[
+          AlertDialogAction(key: 'cancel', label: 'Cancelar'),
+          AlertDialogAction(key: 'camera', label: 'Cámara'),
+          AlertDialogAction(key: 'gallery', label: 'Imágenes')
+        ]);
+
+    if (response == 'cancel') {
+      return;
+    }
+
+    if (response == 'camera') {
+      await _takePicture();
+    } else {
+      await _selectPicture();
+    }
+
+    if (_photoChanged) {
+      _addPicture();
+    }
+  }
+
+  void _confirmDeletePhoto() async {
+    var response = await showAlertDialog(
+        context: context,
+        title: 'Confirmación',
+        message: '¿Estás seguro de querer borrar la última foto tomada?',
+        actions: <AlertDialogAction>[
+          AlertDialogAction(key: 'no', label: 'No'),
+          AlertDialogAction(key: 'yes', label: 'Sí')
+        ]);
+
+    if (response == 'yes') {
+      _deletePhoto();
+    }
+  }
+
+  void _addPicture() async {
+    setState(() {
+      _showLoader = true;
+    });
+
+    // validar la conexión a internet
+    var connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult == ConnectivityResult.none) {
+      setState(() {
+        _showLoader = false;
+      });
+
+      await showAlertDialog(
+          context: context,
+          title: 'Error',
+          message: 'Verifica que estés conectado a internet.',
+          actions: <AlertDialogAction>[
+            AlertDialogAction(key: null, label: 'Aceptar')
+          ]);
+
+      return;
+    }
+
+    List<int> imageBytes = await _image.readAsBytes();
+    String base64Image = base64Encode(imageBytes);
+
+    Map<String, dynamic> request = {
+      'vehicleId': widget.vehicle.id,
+      'image': base64Image
+    };
+
+    Response response =
+        await ApiHelper.post('/api/VehiclePhotoes', request, widget.token);
+
+    setState(() {
+      _showLoader = false;
+    });
+
+    if (!response.isSuccess) {
+      await showAlertDialog(
+          context: context,
+          title: 'Error',
+          message: response.message,
+          actions: <AlertDialogAction>[
+            AlertDialogAction(key: null, label: 'Aceptar')
+          ]);
+      return;
+    }
+
+    Navigator.pop(context, 'yes');
+  }
+
+  void _deletePhoto() async {
+    setState(() {
+      _showLoader = true;
+    });
+
+    // validar la conexión a internet
+    var connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult == ConnectivityResult.none) {
+      setState(() {
+        _showLoader = false;
+      });
+
+      await showAlertDialog(
+          context: context,
+          title: 'Error',
+          message: 'Verifica que estés conectado a internet.',
+          actions: <AlertDialogAction>[
+            AlertDialogAction(key: null, label: 'Aceptar')
+          ]);
+
+      return;
+    }
+
+    Response response = await ApiHelper.delete(
+        '/api/VehiclePhotoes/',
+        widget.vehicle.vehiclePhotos[widget.vehicle.vehiclePhotos.length - 1].id
+            .toString(),
+        widget.token);
+
+    setState(() {
+      _showLoader = false;
+    });
+
+    if (!response.isSuccess) {
+      await showAlertDialog(
+          context: context,
+          title: 'Error',
+          message: response.message,
+          actions: <AlertDialogAction>[
+            AlertDialogAction(key: null, label: 'Aceptar')
+          ]);
+      return;
+    }
+
+    Navigator.pop(context, 'yes');
   }
 }

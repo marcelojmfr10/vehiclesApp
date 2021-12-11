@@ -2,73 +2,92 @@ import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
-
+import 'package:intl/intl.dart';
 import 'package:vehicles_app/components/loader_component.dart';
 import 'package:vehicles_app/helpers/api_helper.dart';
-import 'package:vehicles_app/models/brand.dart';
+import 'package:vehicles_app/models/history.dart';
 import 'package:vehicles_app/models/response.dart';
 import 'package:vehicles_app/models/token.dart';
 import 'package:vehicles_app/models/user.dart';
 import 'package:vehicles_app/models/vehicle.dart';
-import 'package:vehicles_app/models/vehicle_type.dart';
-import 'package:vehicles_app/screens/user_screen.dart';
-import 'package:vehicles_app/screens/vehicle_info_screen.dart';
+import 'package:vehicles_app/screens/history_screen.dart';
 import 'package:vehicles_app/screens/vehicle_screen.dart';
 
-class UserInfoScreen extends StatefulWidget {
+class VehicleInfoScreen extends StatefulWidget {
   final Token token;
   final User user;
+  final Vehicle vehicle;
 
-  UserInfoScreen({required this.token, required this.user});
+  VehicleInfoScreen(
+      {required this.token, required this.user, required this.vehicle});
 
   @override
-  _UserInfoScreenState createState() => _UserInfoScreenState();
+  _VehicleInfoScreenState createState() => _VehicleInfoScreenState();
 }
 
-class _UserInfoScreenState extends State<UserInfoScreen> {
+class _VehicleInfoScreenState extends State<VehicleInfoScreen> {
   bool _showLoader = false;
-  late User _user;
+  late Vehicle _vehicle;
 
   @override
   void initState() {
     super.initState();
-    _user = widget.user;
-    _getUser();
+    _vehicle = widget.vehicle;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(_user.fullName)),
+      appBar: AppBar(
+        title: Text(
+            '${_vehicle.brand.description} ${_vehicle.line} ${_vehicle.plaque}'),
+      ),
       body: Center(
-        child:
-            // _showButtons(),
-            _showLoader
-                ? LoaderComponent(text: 'Por favor espere...')
-                : _getContent(),
+        child: _showLoader
+            ? LoaderComponent(text: 'Por favor espere...')
+            : _getContent(),
       ),
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add),
-        onPressed: () => _goAddVehicle(Vehicle(
-          brand: Brand(id: 0, description: ''),
-          color: '',
-          histories: [],
-          historiesCount: 0,
-          id: 0,
-          imageFullPath: '',
-          line: '',
-          model: 2020,
-          plaque: '',
-          remarks: '',
-          vehiclePhotos: [],
-          vehiclePhotosCount: 0,
-          vehicleType: VehicleType(id: 0, description: ''),
-        )),
+        onPressed: () => _goHistory(History(
+            id: 0,
+            date: '',
+            dateLocal: '',
+            mileage: 0,
+            remarks: '',
+            details: [],
+            detailsCount: 0,
+            totalLabor: 0,
+            totalSpareParts: 0,
+            total: 0)),
       ),
     );
   }
 
-  Widget _showUserInfo() {
+  void _goHistory(History history) async {
+    String? result = await Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => HistoryScreen(
+                token: widget.token, user: widget.user, vehicle: _vehicle)));
+
+    if (result == 'yes') {
+      await _getVehicle();
+    }
+  }
+
+  Widget _getContent() {
+    return Column(
+      children: <Widget>[
+        _showVehicleInfo(),
+        Expanded(
+            child:
+                _vehicle.histories.length == 0 ? _noContent() : _getListView()),
+      ],
+    );
+  }
+
+  Widget _showVehicleInfo() {
     return Container(
       margin: EdgeInsets.all(10),
       padding: EdgeInsets.all(5),
@@ -78,9 +97,9 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
           Stack(
             children: <Widget>[
               ClipRRect(
-                  borderRadius: BorderRadius.circular(50),
+                  borderRadius: BorderRadius.circular(5),
                   child: CachedNetworkImage(
-                    imageUrl: _user.imageFullPath,
+                    imageUrl: _vehicle.imageFullPath,
                     errorWidget: (context, url, error) => Icon(Icons.error),
                     fit: BoxFit.cover,
                     height: 100,
@@ -129,12 +148,12 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
                         Row(
                           children: <Widget>[
                             Text(
-                              'Email: ',
+                              'Tipo de vehículo: ',
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            Text(_user.email,
+                            Text(_vehicle.vehicleType.description,
                                 style: TextStyle(
                                   fontSize: 14,
                                 )),
@@ -146,12 +165,12 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
                         Row(
                           children: <Widget>[
                             Text(
-                              'Tipo documento: ',
+                              'Marca: ',
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            Text(_user.documentType.description,
+                            Text(_vehicle.brand.description,
                                 style: TextStyle(
                                   fontSize: 14,
                                 )),
@@ -163,12 +182,12 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
                         Row(
                           children: <Widget>[
                             Text(
-                              'Documento: ',
+                              'Modelo: ',
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            Text(_user.document,
+                            Text(_vehicle.model.toString(),
                                 style: TextStyle(
                                   fontSize: 14,
                                 )),
@@ -180,12 +199,12 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
                         Row(
                           children: <Widget>[
                             Text(
-                              'Dirección: ',
+                              'Placa: ',
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            Text(_user.address,
+                            Text(_vehicle.plaque,
                                 style: TextStyle(
                                   fontSize: 14,
                                 )),
@@ -197,12 +216,12 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
                         Row(
                           children: <Widget>[
                             Text(
-                              'Teléfono: ',
+                              'Línea: ',
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            Text(_user.phoneNumber,
+                            Text(_vehicle.line,
                                 style: TextStyle(
                                   fontSize: 14,
                                 )),
@@ -214,12 +233,49 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
                         Row(
                           children: <Widget>[
                             Text(
-                              '# Vehículos: ',
+                              'Color: ',
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            Text(_user.vehiclesCount.toString(),
+                            Text(_vehicle.color,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                )),
+                          ],
+                        ),
+                        SizedBox(
+                          height: 5,
+                        ),
+                        Row(
+                          children: <Widget>[
+                            Text(
+                              'Comentarios: ',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                                _vehicle.remarks == null
+                                    ? 'N/A'
+                                    : _vehicle.remarks!,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                )),
+                          ],
+                        ),
+                        SizedBox(
+                          height: 5,
+                        ),
+                        Row(
+                          children: <Widget>[
+                            Text(
+                              '# Historias: ',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(_vehicle.historiesCount.toString(),
                                 style: TextStyle(
                                   fontSize: 14,
                                 )),
@@ -237,60 +293,95 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
     );
   }
 
-  Widget _showButtons() {
-    return Container(
-      margin: EdgeInsets.only(left: 10, right: 10),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: <Widget>[
-          _showEditUserButton(),
-          SizedBox(
-            width: 20,
-          ),
-          _showAddVehicleButton()
-        ],
+  Widget _getListView() {
+    return RefreshIndicator(
+      child: ListView(
+        children: _vehicle.histories.map((e) {
+          return Card(
+              child: InkWell(
+            child: Container(
+                margin: EdgeInsets.all(10),
+                padding: EdgeInsets.all(5),
+                child: Row(
+                  children: <Widget>[
+                    Expanded(
+                        child: Container(
+                            margin: EdgeInsets.symmetric(horizontal: 10),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: <Widget>[
+                                Column(
+                                  children: <Widget>[
+                                    Text(
+                                        '${DateFormat('yyyy-MM-dd').format(DateTime.parse(e.dateLocal))}',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold,
+                                        )),
+                                    Row(
+                                      children: <Widget>[
+                                        Text('${e.mileage} Kms.',
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                            )),
+                                        SizedBox(
+                                          width: 5,
+                                        ),
+                                        Text(
+                                            e.remarks == null
+                                                ? 'N/A'
+                                                : e.remarks!,
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                            )),
+                                      ],
+                                    ),
+                                    Row(
+                                      children: <Widget>[
+                                        Text(
+                                            'Mano de obra: ${NumberFormat.currency(symbol: '\$').format(e.totalLabor)}',
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                            )),
+                                      ],
+                                    ),
+                                    Row(
+                                      children: <Widget>[
+                                        Text(
+                                            'Repuestos: ${NumberFormat.currency(symbol: '\$').format(e.totalSpareParts)}',
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                            )),
+                                      ],
+                                    ),
+                                    Row(
+                                      children: <Widget>[
+                                        Text(
+                                            'Total: ${NumberFormat.currency(symbol: '\$').format(e.total)}',
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                            )),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ))),
+                    Icon(
+                      Icons.arrow_forward_ios,
+                      size: 40,
+                    ),
+                  ],
+                )),
+            onTap: () => _goHistory(e),
+          ));
+        }).toList(),
       ),
+      onRefresh: _getVehicle,
     );
   }
 
-  Widget _showEditUserButton() {
-    return Expanded(
-        child: ElevatedButton(
-            onPressed: () => _goEdit(),
-            style: ButtonStyle(backgroundColor:
-                MaterialStateProperty.resolveWith<Color>(
-                    (Set<MaterialState> states) {
-              return Color(0xFF120E43);
-            })),
-            child: Text('Editar Usuario')));
-  }
-
-  Widget _showAddVehicleButton() {
-    return Expanded(
-      child: ElevatedButton(
-          onPressed: () {},
-          style: ButtonStyle(backgroundColor:
-              MaterialStateProperty.resolveWith<Color>(
-                  (Set<MaterialState> states) {
-            return Color(0xFFE03B8B);
-          })),
-          child: Text('Agregar Vehículo')),
-    );
-  }
-
-  void _goEdit() async {
-    String? result = await Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) =>
-                UserScreen(token: widget.token, user: _user)));
-
-    if (result == 'yes') {
-      // TODO: Pending refresh user info
-    }
-  }
-
-  Future<Null> _getUser() async {
+  Future<Null> _getVehicle() async {
     setState(() {
       _showLoader = true;
     });
@@ -313,7 +404,8 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
       return;
     }
 
-    Response response = await ApiHelper.getUser(widget.token, _user.id);
+    Response response =
+        await ApiHelper.getVehicle(widget.token, _vehicle.id.toString());
 
     setState(() {
       _showLoader = false;
@@ -331,145 +423,35 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
     }
 
     setState(() {
-      _user = response.result;
+      _vehicle = response.result;
     });
-  }
-
-  void _goAddVehicle(Vehicle vehicle) async {
-    String? result = await Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => VehicleScreen(
-                token: widget.token, user: _user, vehicle: vehicle)));
-
-    if (result == 'yes') {
-      _getUser();
-    }
-  }
-
-  void _goVehicle(Vehicle vehicle) async {
-    String? result = await Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => VehicleInfoScreen(
-                token: widget.token, user: _user, vehicle: vehicle)));
-
-    if (result == 'yes') {
-      _getUser();
-    }
-  }
-
-  Widget _getContent() {
-    return Column(
-      children: <Widget>[
-        _showUserInfo(),
-        Expanded(
-            child: _user.vehicles.length == 0 ? _noContent() : _getListView()),
-      ],
-    );
-  }
-
-  Widget _getListView() {
-    return RefreshIndicator(
-      child: ListView(
-        children: _user.vehicles.map((e) {
-          return Card(
-              child: InkWell(
-            child: Container(
-                margin: EdgeInsets.all(10),
-                padding: EdgeInsets.all(5),
-                child: Row(
-                  children: <Widget>[
-                    CachedNetworkImage(
-                      imageUrl: e.imageFullPath,
-                      errorWidget: (context, url, error) => Icon(Icons.error),
-                      fit: BoxFit.cover,
-                      height: 80,
-                      width: 80,
-                      placeholder: (context, url) => Image(
-                        image: AssetImage('assets/vehicles_logo.jpg'),
-                        fit: BoxFit.cover,
-                        height: 80,
-                        width: 80,
-                      ),
-                    ),
-                    // FadeInImage(
-                    //     placeholder: AssetImage('assets/vehicles_logo.jpg'),
-                    //     image: NetworkImage(e.imageFullPath),
-                    //     width: 80,
-                    //     height: 80,
-                    //     fit: BoxFit.cover),
-                    Expanded(
-                        child: Container(
-                            margin: EdgeInsets.symmetric(horizontal: 10),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: <Widget>[
-                                Column(
-                                  children: <Widget>[
-                                    Text(e.plaque,
-                                        style: TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold,
-                                        )),
-                                    Row(
-                                      children: <Widget>[
-                                        Text(e.vehicleType.description,
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                            )),
-                                        SizedBox(
-                                          width: 5,
-                                        ),
-                                        Text(e.brand.description,
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                            )),
-                                      ],
-                                    ),
-                                    Row(
-                                      children: <Widget>[
-                                        Text(e.line,
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                            )),
-                                        SizedBox(
-                                          width: 5,
-                                        ),
-                                        Text(e.color,
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                            )),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ))),
-                    Icon(
-                      Icons.arrow_forward_ios,
-                      size: 40,
-                    ),
-                  ],
-                )),
-            onTap: () => _goVehicle(e),
-          ));
-        }).toList(),
-      ),
-      onRefresh: _getUser,
-    );
   }
 
   Widget _noContent() {
     return Center(
       child: Container(
         margin: EdgeInsets.all(20),
-        child: Text('El usuario no tiene vehículos registrados',
+        child: Text('El vehículo no tiene historias registradas',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
             )),
       ),
     );
+  }
+
+  void _goEdit() async {
+    String? result = await Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => VehicleScreen(
+                  token: widget.token,
+                  user: widget.user,
+                  vehicle: _vehicle,
+                )));
+
+    if (result == 'yes') {
+      await _getVehicle();
+    }
   }
 }
