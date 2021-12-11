@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vehicles_app/models/token.dart';
 import 'package:vehicles_app/screens/brands_screen.dart';
@@ -36,14 +38,27 @@ class _HomeScreenState extends State<HomeScreen> {
       margin: EdgeInsets.all(30),
       child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
         ClipRRect(
-          borderRadius: BorderRadius.circular(150),
-          child: FadeInImage(
-              placeholder: AssetImage('assets/vehicles_logo.jpg'),
-              image: NetworkImage(widget.token.user.imageFullPath),
+            borderRadius: BorderRadius.circular(150),
+            child: CachedNetworkImage(
+              imageUrl: widget.token.user.imageFullPath,
+              errorWidget: (context, url, error) => Icon(Icons.error),
+              fit: BoxFit.cover,
               height: 300,
               width: 300,
-              fit: BoxFit.cover),
-        ),
+              placeholder: (context, url) => Image(
+                image: AssetImage('assets/vehicles_logo.jpg'),
+                fit: BoxFit.cover,
+                height: 300,
+                width: 300,
+              ),
+            )
+            // FadeInImage(
+            //     placeholder: AssetImage('assets/vehicles_logo.jpg'),
+            //     image: NetworkImage(widget.token.user.imageFullPath),
+            //     height: 300,
+            //     width: 300,
+            //     fit: BoxFit.cover),
+            ),
         SizedBox(
           height: 30,
         ),

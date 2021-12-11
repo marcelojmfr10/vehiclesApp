@@ -139,6 +139,24 @@ class _BrandScreenState extends State<BrandScreen> {
       _showLoader = true;
     });
 
+    // validar la conexión a internet
+    var connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult == ConnectivityResult.none) {
+      setState(() {
+        _showLoader = false;
+      });
+
+      await showAlertDialog(
+          context: context,
+          title: 'Error',
+          message: 'Verifica que estés conectado a internet.',
+          actions: <AlertDialogAction>[
+            AlertDialogAction(key: null, label: 'Aceptar')
+          ]);
+
+      return;
+    }
+
     Map<String, dynamic> request = {'description': _description};
 
     Response response =

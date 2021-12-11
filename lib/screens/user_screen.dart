@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:adaptive_dialog/adaptive_dialog.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:camera/camera.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:email_validator/email_validator.dart';
@@ -453,14 +454,27 @@ class _UserScreenState extends State<UserScreen> {
                 child: _photoChanged
                     ? Image.file(File(_image.path),
                         width: 160, height: 160, fit: BoxFit.cover)
-                    : FadeInImage(
-                        placeholder: AssetImage('assets/vehicles_logo.jpg'),
-                        image: NetworkImage(widget.user.imageFullPath),
-                        width: 160,
-                        height: 160,
+                    : CachedNetworkImage(
+                        imageUrl: widget.user.imageFullPath,
+                        errorWidget: (context, url, error) => Icon(Icons.error),
                         fit: BoxFit.cover,
-                      ),
-              ),
+                        height: 160,
+                        width: 160,
+                        placeholder: (context, url) => Image(
+                          image: AssetImage('assets/vehicles_logo.jpg'),
+                          fit: BoxFit.cover,
+                          height: 160,
+                          width: 160,
+                        ),
+                      )
+                // FadeInImage(
+                //     placeholder: AssetImage('assets/vehicles_logo.jpg'),
+                //     image: NetworkImage(widget.user.imageFullPath),
+                //     width: 160,
+                //     height: 160,
+                //     fit: BoxFit.cover,
+                //   ),
+                ),
       ),
       Positioned(
           bottom: 0,

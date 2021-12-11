@@ -1,4 +1,5 @@
 import 'package:adaptive_dialog/adaptive_dialog.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 
@@ -76,15 +77,28 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
           Stack(
             children: <Widget>[
               ClipRRect(
-                borderRadius: BorderRadius.circular(50),
-                child: FadeInImage(
-                  placeholder: AssetImage('assets/vehicles_logo.jpg'),
-                  image: NetworkImage(_user.imageFullPath),
-                  width: 100,
-                  height: 100,
-                  fit: BoxFit.cover,
-                ),
-              ),
+                  borderRadius: BorderRadius.circular(50),
+                  child: CachedNetworkImage(
+                    imageUrl: _user.imageFullPath,
+                    errorWidget: (context, url, error) => Icon(Icons.error),
+                    fit: BoxFit.cover,
+                    height: 100,
+                    width: 100,
+                    placeholder: (context, url) => Image(
+                      image: AssetImage('assets/vehicles_logo.jpg'),
+                      fit: BoxFit.cover,
+                      height: 100,
+                      width: 100,
+                    ),
+                  )
+                  // FadeInImage(
+                  //   placeholder: AssetImage('assets/vehicles_logo.jpg'),
+                  //   image: NetworkImage(_user.imageFullPath),
+                  //   width: 100,
+                  //   height: 100,
+                  //   fit: BoxFit.cover,
+                  // ),
+                  ),
               Positioned(
                   bottom: 0,
                   left: 60,
@@ -353,12 +367,25 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
                 padding: EdgeInsets.all(5),
                 child: Row(
                   children: <Widget>[
-                    FadeInImage(
-                        placeholder: AssetImage('assets/vehicles_logo.jpg'),
-                        image: NetworkImage(e.imageFullPath),
-                        width: 80,
+                    CachedNetworkImage(
+                      imageUrl: e.imageFullPath,
+                      errorWidget: (context, url, error) => Icon(Icons.error),
+                      fit: BoxFit.cover,
+                      height: 80,
+                      width: 80,
+                      placeholder: (context, url) => Image(
+                        image: AssetImage('assets/vehicles_logo.jpg'),
+                        fit: BoxFit.cover,
                         height: 80,
-                        fit: BoxFit.cover),
+                        width: 80,
+                      ),
+                    ),
+                    // FadeInImage(
+                    //     placeholder: AssetImage('assets/vehicles_logo.jpg'),
+                    //     image: NetworkImage(e.imageFullPath),
+                    //     width: 80,
+                    //     height: 80,
+                    //     fit: BoxFit.cover),
                     Expanded(
                         child: Container(
                             margin: EdgeInsets.symmetric(horizontal: 10),
