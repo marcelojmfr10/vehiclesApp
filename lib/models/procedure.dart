@@ -8,7 +8,7 @@ class Procedure {
   Procedure.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     description = json['description'];
-    price = json['price'];
+    price = json['price'] + .0;
   }
 
   Map<String, dynamic> toJson() {

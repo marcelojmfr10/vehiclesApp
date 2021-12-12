@@ -69,7 +69,11 @@ class _VehicleInfoScreenState extends State<VehicleInfoScreen> {
         context,
         MaterialPageRoute(
             builder: (context) => HistoryScreen(
-                token: widget.token, user: widget.user, vehicle: _vehicle)));
+                  token: widget.token,
+                  user: widget.user,
+                  vehicle: _vehicle,
+                  history: history,
+                )));
 
     if (result == 'yes') {
       await _getVehicle();

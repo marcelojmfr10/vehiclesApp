@@ -19,9 +19,9 @@ class Detail {
   Detail.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     procedure = Procedure.fromJson(json['procedure']);
-    laborPrice = json['laborPrice'];
-    sparePartsPrice = json['sparePartsPrice'];
-    totalPrice = json['totalPrice'];
+    laborPrice = json['laborPrice'] + .0;
+    sparePartsPrice = json['sparePartsPrice'] + .0;
+    totalPrice = json['totalPrice'] + .0;
     remarks = json['remarks'];
   }
 

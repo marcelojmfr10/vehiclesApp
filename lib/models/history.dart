@@ -37,9 +37,9 @@ class History {
       });
     }
     detailsCount = json['detailsCount'];
-    totalLabor = json['totalLabor'];
-    totalSpareParts = json['totalSpareParts'];
-    total = json['total'];
+    totalLabor = json['totalLabor'] + .0;
+    totalSpareParts = json['totalSpareParts'] + .0;
+    total = json['total'] + .0;
   }
 
   Map<String, dynamic> toJson() {
