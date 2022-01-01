@@ -10,6 +10,7 @@ import 'package:vehicles_app/models/response.dart';
 import 'package:vehicles_app/models/token.dart';
 import 'package:vehicles_app/models/user.dart';
 import 'package:vehicles_app/models/vehicle.dart';
+import 'package:vehicles_app/screens/history_info_screen.dart';
 import 'package:vehicles_app/screens/history_screen.dart';
 import 'package:vehicles_app/screens/vehicle_screen.dart';
 
@@ -49,7 +50,7 @@ class _VehicleInfoScreenState extends State<VehicleInfoScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add),
-        onPressed: () => _goHistory(History(
+        onPressed: () => _goAddHistory(History(
             id: 0,
             date: '',
             dateLocal: '',
@@ -64,11 +65,27 @@ class _VehicleInfoScreenState extends State<VehicleInfoScreen> {
     );
   }
 
-  void _goHistory(History history) async {
+  void _goAddHistory(History history) async {
     String? result = await Navigator.push(
         context,
         MaterialPageRoute(
             builder: (context) => HistoryScreen(
+                  token: widget.token,
+                  user: widget.user,
+                  vehicle: _vehicle,
+                  history: history,
+                )));
+
+    if (result == 'yes') {
+      await _getVehicle();
+    }
+  }
+
+  void _goHistory(History history) async {
+    String? result = await Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => HistoryInfoScreen(
                   token: widget.token,
                   user: widget.user,
                   vehicle: _vehicle,
