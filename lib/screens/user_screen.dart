@@ -71,27 +71,9 @@ class _UserScreenState extends State<UserScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    _firstName = widget.user.firstName;
-    _firstNameController.text = _firstName;
-
-    _lastName = widget.user.lastName;
-    _lastNameController.text = _lastName;
 
     _getDocumentTypes();
-
-    _documentTypeId = widget.user.documentType.id;
-
-    _document = widget.user.document;
-    _documentController.text = _document;
-
-    _address = widget.user.address;
-    _addressController.text = _address;
-
-    _email = widget.user.email;
-    _emailController.text = _email;
-
-    _phoneNumber = widget.user.phoneNumber;
-    _phoneNumberController.text = _phoneNumber;
+    _loadFieldValues();
   }
 
   @override
@@ -526,7 +508,6 @@ class _UserScreenState extends State<UserScreen> {
   }
 
   Widget _showDocumentType() {
-    // TODO: Pending to implement
     return Container(
         padding: EdgeInsets.all(10),
         child: _documentTypes.length == 0
@@ -712,5 +693,27 @@ class _UserScreenState extends State<UserScreen> {
         _image = image;
       });
     }
+  }
+
+  void _loadFieldValues() {
+    _firstName = widget.user.firstName;
+    _firstNameController.text = _firstName;
+
+    _lastName = widget.user.lastName;
+    _lastNameController.text = _lastName;
+
+    _documentTypeId = widget.user.documentType.id;
+
+    _document = widget.user.document;
+    _documentController.text = _document;
+
+    _address = widget.user.address;
+    _addressController.text = _address;
+
+    _email = widget.user.email;
+    _emailController.text = _email;
+
+    _phoneNumber = widget.user.phoneNumber;
+    _phoneNumberController.text = _phoneNumber;
   }
 }
